@@ -13,14 +13,13 @@ provider "libvirt" {
 resource "libvirt_pool" "distro-pool" {
   name = "distro-pool"
   type = "dir"
-  path = "/home/ad132p/learn/k8s_local/pool"
+  path = "${path.module}/pool"
 }
 
 resource "libvirt_volume" "os_image" {
   name   = "os_image"
   pool   = libvirt_pool.distro-pool.name
-  source = "/home/ad132p/learn/k8s_local/jammy-server-cloudimg-amd64-disk-kvm.img"
-  #source = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img"
+  source = var.source
   format = "qcow2"
 }
 
@@ -49,7 +48,6 @@ resource "libvirt_cloudinit_disk" "commoninit" {
      network_config =   templatefile("${path.module}/templates/network_config.tpl", {
      interface = var.interface
      ip_addr   = var.ips[count.index]
-     mac_addr = var.macs[count.index]
   })
 }
 
@@ -73,7 +71,7 @@ resource "libvirt_network" "priv" {
 
 resource "libvirt_domain" "domain-distro" {
   count  = var.hosts
-  name   = "deb_${var.hostnames[count.index]}"
+  name   = "${var.hostnames[count.index]}"
   memory = var.memory[count.index]
   vcpu   = var.vcpu  
   cloudinit = element(libvirt_cloudinit_disk.commoninit.*.id, count.index)

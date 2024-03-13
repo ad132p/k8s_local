@@ -12,7 +12,7 @@ ssh_pwauth: true
 disable_root: false
 chpasswd:
   list: |
-    admin:linux
+    debian:debian
   expire: false
 growpart:
   mode: auto
