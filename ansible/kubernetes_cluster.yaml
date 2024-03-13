@@ -1,0 +1,65 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install a list of pre-req packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+          - open-iscsi
+          - docker.io
+
+    - name: Add k8s repo key
+      ansible.builtin.shell: 'curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg --yes'
+
+    - name: Add k8s repo 
+      ansible.builtin.shell: "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list"
+
+    - name: Install kubeadm, kubelet, and kubectl
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - kubeadm
+        - kubelet
+        - kubectl
+
+    - name: Containerd RUNC
+      ansible.builtin.shell: |
+        containerd config default > /etc/containerd/config.toml
+        sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+        systemctl restart containerd
+
+
+
+- hosts: control-plane
+  become: yes
+  tasks:
+    - name: Initialize Kubernetes master
+      command: kubeadm init --pod-network-cidr=10.244.0.0/16
+        register: kubeadm_output
+        ignore_errors: no
+
+    - name: Set up kubectl for the current user
+      command: "{{ item }}"
+      with_items:
+        - "mkdir -p $HOME/.kube"
+        - "cp /etc/kubernetes/admin.conf $HOME/.kube/config"
+        - "chown debian:debian $HOME/.kube/config"
+
+    - name: Install Flannel network plugin
+      command: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+
+    - name: Install Longhorn storage
+      command: kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.6.0/deploy/longhorn.yaml
+
+- hosts: workers
+  become: yes
+  tasks:  
+#- name: Join worker nodes to the cluster
+#  command: "{{ hostvars['control-plane']['kubeadm_output']['stdout_lines'][0] }}"
+#  when: "'kubeadm join' in hostvars['control-plane']['kubeadm_output']['stdout']"
