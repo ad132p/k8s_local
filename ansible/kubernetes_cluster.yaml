@@ -49,8 +49,10 @@
       command: "{{ item }}"
       with_items:
         - "mkdir -p $HOME/.kube"
+        - "mkdir -p /home/admin/.kube"
         - "cp /etc/kubernetes/admin.conf $HOME/.kube/config"
-        - "chown debian:debian $HOME/.kube/config"
+        - "cp /etc/kubernetes/admin.conf /home/admin/.kube/config"
+        - "chown admin:admin /home/admin/.kube/config"
 
     - name: Install Flannel network plugin
       command: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml

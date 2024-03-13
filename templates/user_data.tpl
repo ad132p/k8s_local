@@ -3,7 +3,7 @@
 hostname: ${host_name}
 manage_etc_hosts: true
 users:
-  - name: debian
+  - name: admin
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     ssh_authorized_keys:
@@ -12,7 +12,7 @@ ssh_pwauth: true
 disable_root: false
 chpasswd:
   list: |
-    debian:debian
+    admin:admin
   expire: false
 growpart:
   mode: auto
