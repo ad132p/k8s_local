@@ -13,7 +13,7 @@ variable "interface" {
   default = "ens01"
 }
 
-variable "source" {
+variable "source_vm" {
   type = string
   default = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
   #default = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img"

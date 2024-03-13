@@ -5,7 +5,7 @@ ethernets:
         dhcp4: false
         gateway4: 192.168.100.1
         match:
-            macaddress: ${mac_addr}
+	    macaddress:
         nameservers:
             addresses: 
             - 1.1.1.1

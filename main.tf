@@ -19,7 +19,7 @@ resource "libvirt_pool" "distro-pool" {
 resource "libvirt_volume" "os_image" {
   name   = "os_image"
   pool   = libvirt_pool.distro-pool.name
-  source = var.source
+  source = var.source_vm
   format = "qcow2"
 }
 
@@ -79,7 +79,6 @@ resource "libvirt_domain" "domain-distro" {
   network_interface {
       network_name = "priv"
       addresses    = [var.ips[count.index]]
-      mac          = var.macs[count.index]
   }  
   console {
       type        = "pty"
