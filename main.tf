@@ -13,13 +13,14 @@ provider "libvirt" {
 resource "libvirt_pool" "distro-pool" {
   name = "distro-pool"
   type = "dir"
-  path = "~/cluster_storage"
+  path = "/home/ad132p/learn/k8s_local/pool"
 }
 
 resource "libvirt_volume" "os_image" {
   name   = "os_image"
   pool   = libvirt_pool.distro-pool.name
-  source = "./sources/debian-12-genericcloud-amd64.qcow2"
+  source = "/home/ad132p/learn/k8s_local/jammy-server-cloudimg-amd64-disk-kvm.img"
+  #source = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img"
   format = "qcow2"
 }
 
@@ -27,7 +28,7 @@ resource "libvirt_volume" "disk_resized" {
   name           = "disk"
   base_volume_id = "${libvirt_volume.os_image.id}"
   pool           = "distro-pool"
-  size           = 10000000000
+  size           = 20000000000 # 20GiB
 }
 
 resource "libvirt_volume" "worker" {

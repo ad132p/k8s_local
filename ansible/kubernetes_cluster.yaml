@@ -30,6 +30,7 @@
 
     - name: Containerd RUNC
       ansible.builtin.shell: |
+        mkdir /etc/containerd/
         containerd config default > /etc/containerd/config.toml
         sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
         systemctl restart containerd
@@ -40,9 +41,9 @@
   become: yes
   tasks:
     - name: Initialize Kubernetes master
-      command: kubeadm init --pod-network-cidr=10.244.0.0/16
-        register: kubeadm_output
-        ignore_errors: no
+      command: "kubeadm init --pod-network-cidr=10.244.0.0/16"
+      register: kubeadm_output
+      ignore_errors: no
 
     - name: Set up kubectl for the current user
       command: "{{ item }}"
