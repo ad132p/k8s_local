@@ -2,6 +2,10 @@
 - hosts: all
   become: yes
   tasks:
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
     - name: Install a list of pre-req packages
       ansible.builtin.apt:
         pkg:
@@ -35,14 +39,15 @@
         sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
         systemctl restart containerd
 
-
-
 - hosts: control-plane
   become: yes
   tasks:
+    - name: Reset current custer
+      command: "kubeadm reset -f"
+      ignore_errors: no
+
     - name: Initialize Kubernetes master
-      command: "kubeadm init --pod-network-cidr=10.244.0.0/16"
-      register: kubeadm_output
+      command: "kubeadm init  --skip-token-print --pod-network-cidr=10.244.0.0/16"
       ignore_errors: no
 
     - name: Set up kubectl for the current user
@@ -60,9 +65,18 @@
     - name: Install Longhorn storage
       command: kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.6.0/deploy/longhorn.yaml
 
+    - name: Get new k8s token
+      shell: "kubeadm token create --print-join-command"
+      register: kubeadmtoken
+      ignore_errors: no
+
+    - name: Set token fact
+      set_fact: 
+        kubeadmtoken: "{{ kubeadmtoken.stdout }}"
+
+
 - hosts: workers
   become: yes
   tasks:  
-#- name: Join worker nodes to the cluster
-#  command: "{{ hostvars['control-plane']['kubeadm_output']['stdout_lines'][0] }}"
-#  when: "'kubeadm join' in hostvars['control-plane']['kubeadm_output']['stdout']"
+    - name: Join worker nodes to the cluster
+      command: "{{ hostvars['192.168.100.10']['kubeadmtoken'] }}"
