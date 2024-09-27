@@ -1,11 +1,11 @@
 variable "hosts" {
   type = number
-  default = 4
+  default = 3
 }
 
 variable "hostnames" {
   type = list
-  default = ["control-plane", "worker-1","worker-2","worker-3"]
+  default = ["db-1","db-2","db-3"]
 }
 
 variable "interface" {
@@ -15,12 +15,12 @@ variable "interface" {
 
 variable "source_vm" {
   type = string
-  default = "sources/debian12.qcow2"
+  default = "sources/rocky9.qcow2"
 }
 
 variable "memory" {
   type = list
-  default = [2048, 4096, 4096, 4096]
+  default = [2048, 2048, 2048]
 }
 
 variable "vcpu" {
@@ -35,7 +35,7 @@ variable "distros" {
 
 variable "ips" {
   type = list
-  default = ["192.168.100.10", "192.168.100.11", "192.168.100.22", "192.168.100.33"]
+  default = ["192.168.100.10", "192.168.100.11", "192.168.100.12"]
 }
 
 variable "auth_key" {

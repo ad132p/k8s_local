@@ -92,3 +92,20 @@ resource "libvirt_domain" "domain-distro" {
     volume_id = element(libvirt_volume.worker.*.id, count.index)
   }
 }
+
+resource "null_resource" "shutdowner" {
+  # iterate with for_each over Vms list ( my *.tf file creates VMs from list)
+  for_each = toset(var.hostnames)
+  triggers = {
+    trigger = var.vm_condition_poweron
+  }
+
+  provisioner "local-exec" {
+    command = var.vm_condition_poweron?"echo 'do nothing'":"virsh -c qemu:///system shutdown ${each.value}"
+  }
+}
+
+variable "vm_condition_poweron" {
+  default = true
+}
+
